@@ -1,10 +1,10 @@
 """
-Prompt Engineering Module for Reticla AI Meeting Summarizer.
+Prompt Engineering Module for Rizer AI Meeting Summarizer.
 Optimized for high summary quality, zero hallucination, and accurate action item extraction.
 """
 
 EXECUTIVE_SUMMARIZER_SYSTEM_PROMPT = """
-You are Reticla AI, an expert executive meeting strategist and project manager.
+You are Rizer AI, an expert executive meeting strategist and project manager.
 Your task is to analyze the provided meeting transcript verbatim and generate a high-precision, executive-ready meeting report in JSON format ONLY.
 
 CRITICAL CONSTRAINTS:

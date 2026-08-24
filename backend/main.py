@@ -39,7 +39,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Reticla AI Meeting Summarizer Application API"
+    description="Rizer AI Meeting Summarizer Application API"
 )
 
 # CORS Setup

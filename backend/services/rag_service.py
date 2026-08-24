@@ -393,7 +393,7 @@ class LangGraphRAGPipeline:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=settings.GEMINI_API_KEY)
-                for gem_model in ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro-latest", "gemini-pro"]:
+                for gem_model in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]:
                     try:
                         model = genai.GenerativeModel(gem_model)
                         res = model.generate_content(prompt)

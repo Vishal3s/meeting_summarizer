@@ -25,7 +25,7 @@ class GeminiLLMService(LLMService):
         if not self.api_key:
             return OfflineLLMService().summarize(transcript)
 
-        models_to_try = ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro-latest", "gemini-pro"]
+        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
         for gem_model in models_to_try:
             try:
                 import google.generativeai as genai

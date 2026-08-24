@@ -12,7 +12,7 @@ UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 class Settings(BaseModel):
-    PROJECT_NAME: str = "Reticla AI Meeting Summarizer"
+    PROJECT_NAME: str = "Rizer AI Meeting Summarizer"
     VERSION: str = "1.2.0"
     API_V1_STR: str = "/api"
     

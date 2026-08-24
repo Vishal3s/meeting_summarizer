@@ -1,6 +1,6 @@
-# Reticla AI - Meeting Summarizer Platform
+# Rizer AI - Meeting Summarizer Platform
 
-A production-ready, full-stack AI Meeting Summarizer application built with **FastAPI**, **SQLite**, and a **Reticla AI dark glassmorphism web dashboard**. Reticla ingests meeting audio files (up to 40MB), preprocesses and chunks audio for peak ASR accuracy, transcribes speech using cloud & local models (`whisper-large-v3` / Gemini 1.5 / Groq / HuggingFace), extracts grounded executive summaries, key decisions, and action items via prompt-engineered LLMs, and presents an interactive UI with RAG semantic search.
+A production-ready, full-stack AI Meeting Summarizer application built with **FastAPI**, **SQLite**, and a **Rizer AI dark glassmorphism web dashboard**. Rizer ingests meeting audio files (up to 40MB), preprocesses and chunks audio for peak ASR accuracy, transcribes speech using cloud & local models (`whisper-large-v3` / Gemini 1.5 / Groq / HuggingFace), extracts grounded executive summaries, key decisions, and action items via prompt-engineered LLMs, and presents an interactive UI with RAG semantic search.
 
 ---
 
@@ -10,7 +10,7 @@ A production-ready, full-stack AI Meeting Summarizer application built with **Fa
 - **Sequential 2-Pass Audio Pipeline**:
   - **Pass 1**: Extract 100% full verbatim spoken transcript (Groq Whisper `whisper-large-v3`, Gemini 1.5 Flash, Hugging Face, Local Whisper, or Google Speech Engine).
   - **Pass 2**: Process full transcript through LLMs to generate non-hallucinated executive summary, key decisions, action tasks, and discussion topics.
-- **Reticla Dark Glassmorphism UI**: High-contrast obsidian dark interface with frosted glass panels, glowing coral accents, live stepper progress, and `Cmd/Ctrl + K` global search bar.
+- **Rizer Dark Glassmorphism UI**: High-contrast obsidian dark interface with frosted glass panels, glowing coral accents, live stepper progress, and `Cmd/Ctrl + K` global search bar.
 - **Interactive Audio & Task Workbench**:
   - **Audio Seek Timestamps**: Clicking any `[MM:SS]` timestamp in the transcript jumps directly to that time in the audio player.
   - **Action Task Management**: Toggle task completion status in real-time with backend SQLite state persistence.
@@ -42,8 +42,8 @@ A production-ready, full-stack AI Meeting Summarizer application built with **Fa
 
 ### 2. Clone and Setup Environment
 ```bash
-git clone <your-repository-url>
-cd "Metting Summarizer"
+git clone https://github.com/Vishal3s/meeting_summarizer.git
+cd meeting_summarizer
 
 # Create virtual environment (optional but recommended)
 python -m venv venv
@@ -111,8 +111,8 @@ To initialize and push to your remote repository:
 ```bash
 git init
 git add .
-git commit -m "Initial commit: Reticla AI Meeting Summarizer Platform"
+git commit -m "Initial commit: Rizer AI Meeting Summarizer Platform"
 git branch -M main
-git remote add origin <your-remote-repository-url>
+git remote add origin https://github.com/Vishal3s/meeting_summarizer.git
 git push -u origin main
 ```
