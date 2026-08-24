@@ -181,6 +181,15 @@ async def upload_and_process_meeting(
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
 
+@app.post("/api/meetings/{meeting_id}/process", response_model=MeetingResponse)
+def reprocess_meeting(meeting_id: str, db: Session = Depends(get_db)):
+    """Compatibility route endpoint for meeting processing."""
+    meeting = db.query(Meeting).filter(Meeting.id == meeting_id).first()
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    return meeting.to_dict()
+
+
 @app.get("/api/meetings", response_model=MeetingListResponse)
 def list_meetings(
     search: Optional[str] = Query(None, description="Search query for title, transcript, or summary"),

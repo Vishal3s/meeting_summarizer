@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reticla - AI Meeting Assistant Platform</title>
+    <title>Rizer - Turn Conversations into Clarity</title>
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,177 +11,261 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <!-- Background Ambient Glows -->
-    <div class="ambient-glow glow-top"></div>
-    <div class="ambient-glow glow-bottom"></div>
+<body class="light-theme">
 
-    <!-- Navigation Header -->
-    <header class="navbar-wrapper">
-        <nav class="navbar-pill glass-card">
-            <div class="nav-brand">
-                <div class="brand-icon"><i class="fa-solid fa-shapes"></i></div>
-                <span class="brand-name">Reticla</span>
-            </div>
-            <ul class="nav-links">
-                <li class="active"><a href="#home">Home</a></li>
-                <li><a href="#upload">Upload Audio</a></li>
-                <li><a href="#results">Summary & Tasks</a></li>
-                <li><a href="#history">Meeting History</a></li>
-            </ul>
-            <div class="nav-actions">
-                <span class="provider-status-badge" id="apiStatusBadge">
-                    <span class="status-dot"></span> <span id="statusText">Checking AI Engine...</span>
-                </span>
-                <button class="btn btn-secondary btn-pill" onclick="scrollToSection('upload')">
-                    <i class="fa-solid fa-upload"></i> Upload Call
-                </button>
-            </div>
-        </nav>
-    </header>
+    <div class="rizer-app-layout">
+        <!-- Sidebar -->
+        <aside class="rizer-sidebar">
+            <div class="sidebar-top">
+                <div class="rizer-logo">
+                    <svg class="sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="url(#sparkle_grad)"/>
+                        <defs>
+                            <linearGradient id="sparkle_grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818CF8"/>
+                                <stop offset="1" stop-color="#4F46E5"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="logo-text">Rizer</span>
+                </div>
 
-    <!-- Main Container -->
-    <main class="main-container">
-        <!-- Hero Section -->
-        <section class="hero-section" id="home">
-            <div class="hero-badge">
-                <span class="badge-dot"></span> 2-Pass Sequential Audio Pipeline
+                <nav class="sidebar-nav">
+                    <div class="nav-item active" id="navHome" onclick="showView('home')">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Home</span>
+                    </div>
+                    <div class="nav-item" id="navHistory" onclick="showView('history')">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>Meeting History</span>
+                    </div>
+                    <div class="nav-item" id="navFiles" onclick="showView('files')">
+                        <i class="fa-regular fa-folder"></i>
+                        <span>My Files</span>
+                    </div>
+                    <div class="nav-item" id="navSettings" onclick="showView('settings')">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </div>
+                </nav>
             </div>
-            <h1 class="hero-title">
-                AI meeting assistant that<br>makes you smarter.
-            </h1>
-            <p class="hero-subtitle">
-                Pass 1 extracts 100% full content said in audio (Hugging Face / Gemini / Groq ASR). Pass 2 processes the extracted transcript through LLM to generate precise summary & action items.
-            </p>
-            <div class="hero-buttons">
-                <button class="btn btn-pill btn-primary-dark" onclick="scrollToSection('upload')">
-                    <i class="fa-solid fa-microphone-slash"></i> Transcribe Audio File
-                </button>
-                <button class="btn btn-pill btn-light" onclick="scrollToSection('history')">
-                    <i class="fa-solid fa-folder-open"></i> Browse Past Meetings
-                </button>
+
+            <!-- Bottom Sidebar Card -->
+            <div class="sidebar-bottom-card">
+                <div class="bottom-sparkle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#6366F1"/>
+                    </svg>
+                </div>
+                <div class="bottom-card-content">
+                    <div class="bottom-card-title">Rizer</div>
+                    <div class="bottom-card-sub">Turn conversations into clarity.</div>
+                </div>
             </div>
-        </section>
+        </aside>
 
-        <!-- Reticla Assistant Main Platform Frame -->
-        <section class="reticla-frame-container" id="upload">
-            <div class="reticla-glass-panel">
-                <!-- Sidebar -->
-                <aside class="reticla-sidebar">
-                    <div class="sidebar-item active" title="Assistant Dashboard" onclick="switchTab('overview')">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Assistant</span>
-                    </div>
-                    <div class="sidebar-item" title="Meeting Context" onclick="switchTab('transcript')">
-                        <i class="fa-solid fa-quote-right"></i>
-                        <span>Transcript</span>
-                    </div>
-                    <div class="sidebar-item" title="Action Items" onclick="switchTab('action-items')">
-                        <i class="fa-solid fa-list-check"></i>
-                        <span>Action Tasks</span>
-                    </div>
-                    <div class="sidebar-item" title="Ask AI (Q&A)" onclick="switchTab('qa')">
-                        <i class="fa-solid fa-comments"></i>
-                        <span>Ask AI</span>
-                    </div>
-                    <div class="sidebar-item" title="Meeting Archive" onclick="scrollToSection('history')">
-                        <i class="fa-solid fa-box-archive"></i>
-                        <span>History</span>
-                    </div>
-                </aside>
+        <!-- Main Wrapper -->
+        <div class="rizer-main-wrapper">
+            <!-- Header Bar -->
+            <header class="rizer-header">
+                <div class="header-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Search meeting audio, transcripts, topics..." onkeyup="handleGlobalSearch(event)">
+                </div>
 
-                <!-- Reticla Main Workbench Content -->
-                <div class="reticla-workbench">
-                    <!-- Top Workbench Bar with Search -->
-                    <div class="workbench-header">
-                        <div class="reticla-search-bar">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="globalSearchInput" placeholder="Search transcript, decisions, tasks, or titles..." onkeyup="handleGlobalSearch(event)">
-                            <span class="shortcut-key">⌘ + K</span>
+                <div class="header-right">
+                    <div class="status-badge" id="apiStatusBadge">
+                        <span class="status-dot green"></span>
+                        <span id="statusText">Ready</span>
+                    </div>
+                    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i class="fa-regular fa-moon"></i>
+                    </button>
+                    <div class="user-avatar" title="User Profile">V</div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="rizer-content">
+                <!-- VIEW 1: HOME DASHBOARD -->
+                <div class="view-pane active" id="viewHome">
+                    <!-- Welcome Hero Header -->
+                    <div class="welcome-header">
+                        <h1>Welcome to Rizer ✨</h1>
+                        <p>Upload a meeting audio and get transcripts, summaries, and smart answers.</p>
+                    </div>
+
+                    <!-- 4 Horizontal Feature Cards -->
+                    <div class="features-grid">
+                        <div class="feature-card" onclick="scrollToUpload()">
+                            <div class="feature-icon-wrapper purple">
+                                <i class="fa-solid fa-waveform"></i>
+                            </div>
+                            <div class="feature-info">
+                                <h3>Transcribe</h3>
+                                <p>Accurate speech-to-text with timestamps.</p>
+                            </div>
                         </div>
-                        <div class="workbench-actions">
-                            <button class="icon-btn" title="Refresh Data" onclick="fetchMeetingsHistory()">
-                                <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                            <button class="icon-btn" title="Copy Current Summary" onclick="copyCurrentSummary()">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
+
+                        <div class="feature-card" onclick="scrollToUpload()">
+                            <div class="feature-icon-wrapper green">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </div>
+                            <div class="feature-info">
+                                <h3>Summarize</h3>
+                                <p>Get concise meeting summaries.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-card" onclick="scrollToUpload()">
+                            <div class="feature-icon-wrapper orange">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div class="feature-info">
+                                <h3>Action Items</h3>
+                                <p>Extract tasks & decisions.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-card" onclick="scrollToUpload()">
+                            <div class="feature-icon-wrapper blue">
+                                <i class="fa-regular fa-comments"></i>
+                            </div>
+                            <div class="feature-info">
+                                <h3>Ask & Find</h3>
+                                <p>Ask questions about your meeting.</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Upload & Audio Dropzone -->
-                    <div class="upload-card-wrapper" id="uploadZoneWrapper">
-                        <div class="dropzone glass-card" id="dropzone" onclick="document.getElementById('audioFileInput').click()">
+                    <!-- Main Audio Dropzone Upload Card -->
+                    <div class="upload-drop-container">
+                        <div class="rizer-dropzone" id="dropzone" onclick="document.getElementById('audioFileInput').click()">
                             <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a,.ogg,.flac,.webm,.aac" style="display:none" onchange="handleFileSelect(event)">
-                            <div class="dropzone-icon">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            
+                            <div class="dropzone-center-icon">
+                                <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="56" height="56" rx="16" fill="#EEF2FF"/>
+                                    <path d="M28 16V32M28 16L22 22M28 16L34 22" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M18 36H38" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round"/>
+                                </svg>
                             </div>
-                            <h3>Drag and drop meeting audio here</h3>
-                            <p class="supported-formats">Supports MP3, WAV, M4A, OGG, FLAC, WEBM, AAC (Max 40MB)</p>
-                            <div class="file-select-btn">
-                                <span class="btn btn-pill btn-secondary">Select Audio File (Up to 40MB)</span>
-                            </div>
+
+                            <h2>Upload Meeting Audio</h2>
+                            <p class="dropzone-sub">Drag & drop your audio file here, or click to browse</p>
+
+                            <button class="btn-choose-file" type="button">
+                                <i class="fa-solid fa-upload"></i> Choose Audio File
+                            </button>
+
+                            <span class="file-support-hint">Supports MP3, WAV, M4A, FLAC • Up to 2 hours</span>
                         </div>
 
-                        <!-- Selected File Info & Title Input -->
-                        <div class="selected-file-card glass-card" id="selectedFileCard" style="display:none;">
-                            <div class="file-info-header">
-                                <div class="file-icon-badge"><i class="fa-solid fa-file-audio"></i></div>
-                                <div class="file-details">
-                                    <h4 id="selectedFileName">filename.mp3</h4>
+                        <!-- Selected File Info & Process Button -->
+                        <div class="selected-file-panel" id="selectedFileCard" style="display:none;">
+                            <div class="file-card-top">
+                                <div class="file-icon-square"><i class="fa-solid fa-file-audio"></i></div>
+                                <div class="file-text-details">
+                                    <h4 id="selectedFileName">audio_recording.mp3</h4>
                                     <span id="selectedFileSize">0 MB</span>
-                                    <span class="large-file-badge" id="largeFileBadge" style="display:none; color:#FF6B4A; font-weight:600; font-size:0.8rem; margin-left:8px;">
+                                    <span class="large-file-tag" id="largeFileBadge" style="display:none;">
                                         <i class="fa-solid fa-scissors"></i> Will be auto-chunked (>15MB)
                                     </span>
                                 </div>
-                                <button class="close-file-btn" onclick="clearSelectedFile()"><i class="fa-solid fa-xmark"></i></button>
+                                <button class="btn-remove-file" onclick="clearSelectedFile()"><i class="fa-solid fa-xmark"></i></button>
                             </div>
-                            <div class="title-input-group">
+                            <div class="title-input-row">
                                 <label for="meetingTitleInput">Meeting Title (Optional)</label>
-                                <input type="text" id="meetingTitleInput" class="reticla-input" placeholder="e.g. Q3 Roadmap Sync & Technical Planning">
+                                <input type="text" id="meetingTitleInput" class="rizer-input" placeholder="e.g. Remote Control Kickoff & Strategy">
                             </div>
-                            <button class="btn btn-pill btn-coral w-full" id="processBtn" onclick="uploadAndProcessAudio()">
+                            <button class="btn-process-audio" id="processBtn" onclick="uploadAndProcessAudio()">
                                 <i class="fa-solid fa-bolt"></i> Process Meeting Audio
                             </button>
                         </div>
 
-                        <!-- Live 2-Pass Processing Stepper -->
-                        <div class="processing-stepper-card glass-card" id="processingStepper" style="display:none;">
-                            <div class="stepper-header">
-                                <div class="spinner-ring"></div>
+                        <!-- Live Stepper Processing Progress -->
+                        <div class="stepper-panel" id="processingStepper" style="display:none;">
+                            <div class="stepper-top">
+                                <div class="spinner-loader"></div>
                                 <div>
                                     <h3 id="stepperStatusText">Processing Meeting Audio...</h3>
-                                    <span id="chunkingDetailText" style="font-size:0.85rem; color:var(--text-secondary);"></span>
+                                    <span id="chunkingDetailText" class="stepper-sub">Extracting speech and compiling smart summaries</span>
                                 </div>
                             </div>
-                            <div class="stepper-progress-bar">
-                                <div class="progress-fill" id="progressFill"></div>
-                            </div>
-                            <div class="stepper-nodes">
-                                <div class="step-node active" id="stepPass1"><i class="fa-solid fa-waveform"></i> Pass 1: Audio Transcription</div>
-                                <div class="step-node" id="stepVerify"><i class="fa-solid fa-file-lines"></i> Transcript Extraction</div>
-                                <div class="step-node" id="stepPass2"><i class="fa-solid fa-brain"></i> Pass 2: LLM Summarizer</div>
-                                <div class="step-node" id="stepDone"><i class="fa-solid fa-circle-check"></i> Complete</div>
+                            <div class="stepper-bar">
+                                <div class="stepper-fill" id="progressFill"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Active Meeting Results View -->
-                    <div class="results-view-wrapper" id="resultsView" style="display:none;">
-                        <!-- Meeting Title & Audio Player Bar -->
-                        <div class="meeting-player-card glass-card">
-                            <div class="meeting-meta-header">
-                                <div>
-                                    <span class="meta-tag" id="resAsrTag">ASR: Gemini</span>
-                                    <span class="meta-tag" id="resLlmTag">LLM: Gemini</span>
-                                    <h2 class="active-meeting-title" id="resTitle">Q3 Product Strategy Sync</h2>
-                                    <span class="meeting-date-str" id="resDate">Today at 02:30 PM</span>
+                    <!-- Bottom Grid Section (Recent Activity & Meeting History) -->
+                    <div class="bottom-grid">
+                        <!-- Left: Recent Activity -->
+                        <div class="activity-column">
+                            <div class="section-title-row">
+                                <h2>✨ Recent Activity</h2>
+                                <span class="sub-label">Your latest meetings</span>
+                            </div>
+                            <div class="activity-card-container" id="recentActivityContainer">
+                                <div class="empty-state-box">
+                                    <i class="fa-regular fa-folder-open empty-icon"></i>
+                                    <h4>No meetings yet</h4>
+                                    <p>Upload your first audio file to get started.</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Meeting History & Hero Banner -->
+                        <div class="history-column">
+                            <!-- Top History Box -->
+                            <div class="side-history-card">
+                                <div class="side-history-header">
+                                    <div class="history-title-group">
+                                        <i class="fa-regular fa-clock"></i>
+                                        <h3>Meeting History</h3>
+                                    </div>
+                                    <button class="btn-view-all" onclick="showView('history')">View all</button>
+                                </div>
+                                <div class="side-history-list" id="sideHistoryList">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Bottom Hero Banner Card -->
+                            <div class="side-hero-banner">
+                                <div class="hero-banner-icon">
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <path d="M12 28L6 32V10C6 7.79086 7.79086 6 10 6H30C32.2091 6 34 7.79086 34 10V22C34 24.2091 32.2091 26 30 26H14L12 28Z" fill="#EEF2FF" stroke="#6366F1" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <h3>Turn meetings into clarity.</h3>
+                                <p>Let Rizer do the heavy lifting.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- VIEW 2: ACTIVE MEETING WORKBENCH VIEW (TABS & RESULTS) -->
+                <div class="view-pane" id="viewWorkbench" style="display:none;">
+                    <div class="workbench-card">
+                        <!-- Top Workbench Bar -->
+                        <div class="workbench-top-bar">
+                            <div class="meeting-title-meta">
+                                <span class="tag-badge" id="resAsrTag">ASR Engine</span>
+                                <span class="tag-badge" id="resLlmTag">Rizer AI</span>
+                                <h2 id="resTitle">Meeting Analysis Results</h2>
+                                <span class="date-str" id="resDate">Today</span>
+                            </div>
+                            <div class="workbench-actions">
+                                <button class="btn-secondary-sm" onclick="showView('home')">
+                                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                                </button>
                                 <div class="export-dropdown-wrapper">
-                                    <button class="btn btn-pill btn-secondary" onclick="toggleExportMenu()">
-                                        <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    <button class="btn-primary-sm" onclick="toggleExportMenu()">
+                                        <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down"></i>
                                     </button>
-                                    <div class="export-menu glass-card" id="exportMenu" style="display:none;">
+                                    <div class="export-dropdown-menu" id="exportMenu" style="display:none;">
                                         <button onclick="exportCurrentMeeting('markdown')"><i class="fa-regular fa-file-lines"></i> Markdown (.md)</button>
                                         <button onclick="exportCurrentMeeting('json')"><i class="fa-code"></i> JSON Data</button>
                                         <button onclick="exportCurrentMeeting('text')"><i class="fa-regular fa-file"></i> Full Summary Text (.txt)</button>
@@ -189,148 +273,193 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- HTML5 Audio Player -->
-                            <div class="audio-player-container">
-                                <audio id="meetingAudioPlayer" controls class="w-full"></audio>
-                            </div>
                         </div>
 
-                        <!-- Results Navigation Tabs -->
-                        <div class="reticla-tabs-nav">
-                            <button class="reticla-tab-btn active" id="tabBtnOverview" onclick="switchTab('overview')">
+                        <!-- Audio Player -->
+                        <div class="workbench-player-box">
+                            <audio id="meetingAudioPlayer" controls class="w-full"></audio>
+                        </div>
+
+                        <!-- Tabs Navigation Bar -->
+                        <div class="rizer-tabs-header">
+                            <button class="tab-btn active" id="tabBtnOverview" onclick="switchTab('overview')">
                                 <i class="fa-solid fa-chart-pie"></i> Executive Overview
                             </button>
-                            <button class="reticla-tab-btn" id="tabBtnDecisions" onclick="switchTab('decisions')">
+                            <button class="tab-btn" id="tabBtnDecisions" onclick="switchTab('decisions')">
                                 <i class="fa-solid fa-gavel"></i> Key Decisions (<span id="decisionsCount">0</span>)
                             </button>
-                            <button class="reticla-tab-btn" id="tabBtnActions" onclick="switchTab('action-items')">
+                            <button class="tab-btn" id="tabBtnActions" onclick="switchTab('action-items')">
                                 <i class="fa-solid fa-list-check"></i> Action Items (<span id="actionsCount">0</span>)
                             </button>
-                            <button class="reticla-tab-btn" id="tabBtnTranscript" onclick="switchTab('transcript')">
+                            <button class="tab-btn" id="tabBtnTranscript" onclick="switchTab('transcript')">
                                 <i class="fa-solid fa-align-left"></i> Full Transcript
                             </button>
-                            <button class="reticla-tab-btn" id="tabBtnQa" onclick="switchTab('qa')">
+                            <button class="tab-btn" id="tabBtnQa" onclick="switchTab('qa')">
                                 <i class="fa-solid fa-brain"></i> Ask AI (Q&A)
                             </button>
                         </div>
 
-                        <!-- Tab Content 1: Executive Overview -->
+                        <!-- Tab Content 1: Overview -->
                         <div class="tab-pane active" id="tabOverview">
-                            <div class="overview-grid">
-                                <div class="glass-card summary-box">
-                                    <h3><i class="fa-solid fa-sparkles text-coral"></i> Executive Summary</h3>
-                                    <p class="summary-text" id="resSummaryText">Processing completed...</p>
+                            <div class="overview-pane-grid">
+                                <div class="content-box">
+                                    <h3><i class="fa-solid fa-sparkles text-indigo"></i> Executive Summary</h3>
+                                    <p class="summary-body-text" id="resSummaryText">Processing completed...</p>
                                 </div>
-                                <div class="glass-card topics-box">
-                                    <h3><i class="fa-solid fa-layer-group text-coral"></i> Discussion Topics</h3>
-                                    <div class="topics-list" id="resTopicsList"></div>
+                                <div class="content-box">
+                                    <h3><i class="fa-solid fa-layer-group text-indigo"></i> Key Discussion Topics</h3>
+                                    <div id="resTopicsList"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tab Content 2: Key Decisions -->
+                        <!-- Tab Content 2: Decisions -->
                         <div class="tab-pane" id="tabDecisions">
-                            <div class="glass-card decisions-card">
-                                <h3><i class="fa-solid fa-circle-check text-coral"></i> Agreed Decisions</h3>
-                                <ul class="decisions-list" id="resDecisionsList"></ul>
+                            <div class="content-box">
+                                <h3><i class="fa-solid fa-circle-check text-indigo"></i> Agreed Key Decisions</h3>
+                                <ul class="decisions-bullet-list" id="resDecisionsList"></ul>
                             </div>
                         </div>
 
                         <!-- Tab Content 3: Action Items -->
                         <div class="tab-pane" id="tabActionItems">
-                            <div class="glass-card action-items-card">
-                                <div class="card-title-row">
-                                    <h3><i class="fa-solid fa-square-check text-coral"></i> Assigned Action Items</h3>
-                                    <span class="subtitle-hint">Click checkboxes to update task status in real-time</span>
+                            <div class="content-box">
+                                <div class="box-header-row">
+                                    <h3><i class="fa-solid fa-square-check text-indigo"></i> Action Tasks & Assignees</h3>
+                                    <span class="sub-hint">Click checkboxes to toggle completion status</span>
                                 </div>
-                                <div class="action-items-list" id="resActionItemsList"></div>
+                                <div id="resActionItemsList"></div>
                             </div>
                         </div>
 
                         <!-- Tab Content 4: Full Transcript -->
                         <div class="tab-pane" id="tabTranscript">
-                            <div class="glass-card transcript-card">
-                                <div class="transcript-toolbar">
-                                    <span class="hint-text"><i class="fa-solid fa-computer-mouse"></i> Click any timestamp [MM:SS] to jump audio playback</span>
-                                    <button class="btn btn-pill btn-secondary btn-sm" onclick="copyTranscriptText()">
+                            <div class="content-box">
+                                <div class="box-header-row">
+                                    <span class="sub-hint"><i class="fa-solid fa-mouse"></i> Click any timestamp [MM:SS] to jump audio playback</span>
+                                    <button class="btn-secondary-sm" onclick="copyTranscriptText()">
                                         <i class="fa-regular fa-copy"></i> Copy Text
                                     </button>
                                 </div>
-                                <div class="transcript-body" id="resTranscriptBody"></div>
+                                <div class="transcript-scroll-body" id="resTranscriptBody"></div>
                             </div>
                         </div>
 
                         <!-- Tab Content 5: RAG Q&A -->
                         <div class="tab-pane" id="tabQa">
-                            <div class="glass-card qa-card" style="padding: 20px;">
-                                <div class="card-title-row" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
-                                    <h3><i class="fa-solid fa-brain text-coral"></i> RAG Transcript Q&A</h3>
-                                    <span class="subtitle-hint" id="qaProviderHint" style="font-size:0.8rem; color:var(--text-secondary);">BGE-M3 Embeddings & Vector Index</span>
+                            <div class="content-box">
+                                <div class="box-header-row">
+                                    <h3><i class="fa-solid fa-brain text-indigo"></i> RAG Transcript Q&A</h3>
+                                    <span class="sub-hint" id="qaProviderHint">RAG AI Engine</span>
                                 </div>
-                                <p class="muted-text" style="margin-bottom: 16px; font-size: 0.9rem;">
-                                    Ask questions about this meeting audio. Answers are generated using semantic RAG vector retrieval bounded strictly by transcript context with timestamps and speaker names.
-                                </p>
-                                <div class="qa-input-wrapper" style="display: flex; gap: 8px; margin-bottom: 16px;">
-                                    <input type="text" id="qaQuestionInput" class="reticla-input" style="flex:1;" placeholder="e.g. What key decisions were made about project timelines?" onkeydown="if(event.key==='Enter') askMeetingQuestion()">
-                                    <button class="btn btn-pill btn-coral" id="qaSubmitBtn" onclick="askMeetingQuestion()">
+                                <p class="muted-p">Ask questions about this meeting audio. Rizer generates concise, direct answers based strictly on transcript context.</p>
+                                
+                                <div class="qa-input-group">
+                                    <input type="text" id="qaQuestionInput" class="rizer-input" placeholder="e.g. What key decisions were agreed upon in this meeting?" onkeydown="if(event.key==='Enter') askMeetingQuestion()">
+                                    <button class="btn-process-audio" id="qaSubmitBtn" onclick="askMeetingQuestion()">
                                         <i class="fa-solid fa-paper-plane"></i> Ask
                                     </button>
                                 </div>
-                                <div class="qa-prompts-chips" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+
+                                <div class="prompt-chips-row">
+                                    <span class="prompt-chip" onclick="setQAQuestion('one line summary')">💡 one line summary</span>
                                     <span class="prompt-chip" onclick="setQAQuestion('What key decisions were agreed upon in this meeting?')">💡 Key decisions?</span>
                                     <span class="prompt-chip" onclick="setQAQuestion('What tasks or action items were assigned and to whom?')">💡 Assigned tasks & owners?</span>
-                                    <span class="prompt-chip" onclick="setQAQuestion('What timelines or deadlines were discussed?')">💡 Project timelines?</span>
+                                    <span class="prompt-chip" onclick="setQAQuestion('What is the project budget?')">💡 Project budget?</span>
                                 </div>
-                                <div class="qa-results-container" id="qaResultsContainer" style="display: none;">
-                                    <div class="qa-answer-box glass-card" style="padding: 20px; background: rgba(255, 255, 255, 0.04); border-radius: 16px;">
-                                        <div class="qa-question-display" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">
-                                            <i class="fa-solid fa-circle-question text-coral"></i> Question: <span id="qaQuestionDisplayText" style="color: var(--text-primary);"></span>
+
+                                <div class="qa-results-box" id="qaResultsContainer" style="display: none;">
+                                    <div class="qa-display-card">
+                                        <div class="qa-question-line">
+                                            <i class="fa-solid fa-circle-question text-indigo"></i> Question: <span id="qaQuestionDisplayText"></span>
                                         </div>
-                                        <h4 style="color: var(--coral-accent); margin-bottom: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Professional Answer:</h4>
-                                        <div id="qaAnswerText" style="line-height: 1.6; white-space: pre-wrap; font-size: 0.95rem;"></div>
+                                        <h4 class="qa-answer-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Professional Answer:</h4>
+                                        <div id="qaAnswerText"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Meeting History Section -->
-        <section class="history-section" id="history">
-            <div class="section-header">
-                <h2><i class="fa-solid fa-clock-rotate-left text-coral"></i> Previous Meetings Archive</h2>
-                <p>Access your stored meeting transcripts, summaries, and action item logs</p>
-            </div>
-            <div class="glass-card table-card">
-                <div class="table-responsive">
-                    <table class="reticla-table">
-                        <thead>
-                            <tr>
-                                <th>Meeting Title</th>
-                                <th>Date & Time</th>
-                                <th>Duration</th>
-                                <th>Tasks</th>
-                                <th>Providers</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="meetingHistoryTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center py-4 muted-text">Loading past meetings...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- VIEW 3: MEETING HISTORY ARCHIVE TABLE -->
+                <div class="view-pane" id="viewHistory" style="display:none;">
+                    <div class="content-box">
+                        <div class="box-header-row">
+                            <div>
+                                <h2><i class="fa-regular fa-clock text-indigo"></i> Stored Meeting Archive</h2>
+                                <p class="muted-p">Manage and review all your processed audio transcripts and summaries.</p>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="rizer-table">
+                                <thead>
+                                    <tr>
+                                        <th>Meeting Title</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Tasks</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="meetingHistoryTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding:24px;">Loading meetings...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
 
-    <!-- Toast Notification Engine -->
+                <!-- VIEW 4: MY FILES -->
+                <div class="view-pane" id="viewFiles" style="display:none;">
+                    <div class="content-box">
+                        <h2><i class="fa-regular fa-folder text-indigo"></i> My Files</h2>
+                        <p class="muted-p">All uploaded audio files and exported transcripts.</p>
+                        <div id="myFilesList" style="margin-top:16px;"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: SETTINGS -->
+                <div class="view-pane" id="viewSettings" style="display:none;">
+                    <div class="content-box">
+                        <h2><i class="fa-solid fa-gear text-indigo"></i> Settings & Engine Configuration</h2>
+                        <p class="muted-p">Configure API keys, AI models, and processing preferences.</p>
+                        <div style="margin-top:20px; display:flex; flex-direction:column; gap:16px;">
+                            <div>
+                                <strong>Active AI Engine Status:</strong>
+                                <p id="settingsEngineStatus" class="muted-p">Checking backend configuration...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Custom Theme-Matched Delete Confirmation Modal -->
+    <div class="rizer-modal-overlay" id="confirmDeleteModal" style="display:none;">
+        <div class="rizer-modal-card">
+            <div class="modal-icon-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3>Delete Meeting History?</h3>
+            <p>Are you sure you want to delete this meeting recording, transcript, and summary? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-modal-delete" id="confirmDeleteBtn"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Scripts -->
+    <!-- Script -->
     <script src="app.js"></script>
 </body>
 </html>

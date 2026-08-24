@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Reticla AI Meeting Assistant - Frontend Application JavaScript
+   Rizer AI Meeting Assistant - Frontend Application JavaScript
    ========================================================================== */
 
 const API_BASE_URL = "/api";
@@ -23,7 +23,40 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* --------------------------------------------------------------------------
-   API Health & Status
+   View & Navigation Switcher
+   -------------------------------------------------------------------------- */
+function showView(viewName) {
+    const views = ["home", "workbench", "history", "files", "settings"];
+    views.forEach(v => {
+        const pane = document.getElementById(`view${v.charAt(0).toUpperCase() + v.slice(1)}`);
+        const nav = document.getElementById(`nav${v.charAt(0).toUpperCase() + v.slice(1)}`);
+        if (pane) pane.style.display = "none";
+        if (nav) nav.classList.remove("active");
+    });
+
+    const activePane = document.getElementById(`view${viewName.charAt(0).toUpperCase() + viewName.slice(1)}`);
+    const activeNav = document.getElementById(`nav${viewName.charAt(0).toUpperCase() + viewName.slice(1)}`);
+
+    if (activePane) activePane.style.display = "block";
+    if (activeNav) activeNav.classList.add("active");
+}
+
+function scrollToUpload() {
+    showView("home");
+    const dropzone = document.getElementById("dropzone");
+    if (dropzone) dropzone.scrollIntoView({ behavior: "smooth" });
+}
+
+function toggleTheme() {
+    const isDark = document.body.classList.toggle("dark-theme");
+    const icon = document.querySelector("#themeToggleBtn i");
+    if (icon) {
+        icon.className = isDark ? "fa-regular fa-sun" : "fa-regular fa-moon";
+    }
+}
+
+/* --------------------------------------------------------------------------
+   API Health Check
    -------------------------------------------------------------------------- */
 async function checkApiHealth() {
     try {
@@ -32,18 +65,20 @@ async function checkApiHealth() {
         const data = await res.json();
         
         const statusText = document.getElementById("statusText");
+        const settingsStatus = document.getElementById("settingsEngineStatus");
         const maxMb = data.max_file_size_mb || 40;
         
-        if (data.gemini_configured) {
-            statusText.textContent = `Engine: Google Gemini AI (Max ${maxMb}MB)`;
-        } else if (data.groq_configured) {
-            statusText.textContent = `Engine: Groq AI (Max ${maxMb}MB)`;
-        } else {
-            statusText.textContent = `Engine: HuggingFace / Local ASR (Max ${maxMb}MB)`;
-        }
+        let engineStr = "Ready";
+        if (data.gemini_configured) engineStr = `Engine: Google Gemini AI (Max ${maxMb}MB)`;
+        else if (data.groq_configured) engineStr = `Engine: Groq AI (Max ${maxMb}MB)`;
+        else engineStr = `Engine: Rizer Speech Engine (Max ${maxMb}MB)`;
+
+        if (statusText) statusText.textContent = engineStr;
+        if (settingsStatus) settingsStatus.textContent = engineStr;
     } catch (err) {
         console.warn("API Health warning:", err);
-        document.getElementById("statusText").textContent = "Engine: HuggingFace / Speech Engine (Max 40MB)";
+        const statusText = document.getElementById("statusText");
+        if (statusText) statusText.textContent = "Engine: Rizer Speech Engine (Max 40MB)";
     }
 }
 
@@ -55,13 +90,11 @@ function setupDragAndDrop() {
     if (!dropzone) return;
 
     ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
-        dropzone.addEventListener(eventName, preventDefaults, false);
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
     });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
 
     ["dragenter", "dragover"].forEach(eventName => {
         dropzone.addEventListener(eventName, () => dropzone.classList.add("dragover"), false);
@@ -88,50 +121,47 @@ function handleFileSelect(event) {
 }
 
 function handleFile(file) {
-    const allowedExts = [".mp3", ".wav", ".m4a", ".ogg", ".flac", ".webm", ".aac"];
-    const fileExt = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-
-    if (!allowedExts.includes(fileExt)) {
-        showToast(`Invalid file format '${fileExt}'. Allowed: ${allowedExts.join(", ")}`, "error");
-        return;
-    }
-
-    const maxSize = 40 * 1024 * 1024; // Up to 40MB
-    if (file.size > maxSize) {
-        showToast(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 40MB maximum limit.`, "error");
-        return;
-    }
-
     currentSelectedFile = file;
-    const fileMb = (file.size / (1024 * 1024)).toFixed(2);
     
-    document.getElementById("selectedFileName").textContent = file.name;
-    document.getElementById("selectedFileSize").textContent = `${fileMb} MB`;
+    const fileNameEl = document.getElementById("selectedFileName");
+    const fileSizeEl = document.getElementById("selectedFileSize");
+    const largeBadge = document.getElementById("largeFileBadge");
+    const titleInput = document.getElementById("meetingTitleInput");
+    
+    const fileCard = document.getElementById("selectedFileCard");
+    const dropzone = document.getElementById("dropzone");
 
-    const largeFileBadge = document.getElementById("largeFileBadge");
-    if (file.size > 15 * 1024 * 1024) {
-        largeFileBadge.style.display = "inline-block";
-    } else {
-        largeFileBadge.style.display = "none";
+    if (fileNameEl) fileNameEl.textContent = file.name;
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    if (fileSizeEl) fileSizeEl.textContent = `${sizeMb} MB`;
+
+    if (largeBadge) {
+        largeBadge.style.display = file.size > 15 * 1024 * 1024 ? "inline" : "none";
     }
-    
-    document.getElementById("dropzone").style.display = "none";
-    document.getElementById("selectedFileCard").style.display = "flex";
-    
-    const suggestedTitle = file.name.substring(0, file.name.lastIndexOf(".")).replace(/[-_]/g, " ");
-    document.getElementById("meetingTitleInput").value = suggestedTitle.charAt(0).toUpperCase() + suggestedTitle.slice(1);
+
+    if (titleInput && !titleInput.value) {
+        const defaultTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        titleInput.value = defaultTitle.charAt(0).toUpperCase() + defaultTitle.slice(1);
+    }
+
+    if (fileCard) fileCard.style.display = "block";
+    if (dropzone) dropzone.style.display = "none";
 }
 
 function clearSelectedFile() {
     currentSelectedFile = null;
-    document.getElementById("audioFileInput").value = "";
-    document.getElementById("dropzone").style.display = "block";
-    document.getElementById("selectedFileCard").style.display = "none";
-    document.getElementById("largeFileBadge").style.display = "none";
+    const fileInput = document.getElementById("audioFileInput");
+    if (fileInput) fileInput.value = "";
+    
+    const fileCard = document.getElementById("selectedFileCard");
+    const dropzone = document.getElementById("dropzone");
+
+    if (fileCard) fileCard.style.display = "none";
+    if (dropzone) dropzone.style.display = "block";
 }
 
 /* --------------------------------------------------------------------------
-   Audio Processing Stepper - 2-Pass Pipeline Flow
+   Upload & Sequential Processing
    -------------------------------------------------------------------------- */
 async function uploadAndProcessAudio() {
     if (!currentSelectedFile) {
@@ -139,179 +169,168 @@ async function uploadAndProcessAudio() {
         return;
     }
 
-    const titleInput = document.getElementById("meetingTitleInput").value.trim();
-    const formData = new FormData();
-    formData.append("file", currentSelectedFile);
-    if (titleInput) {
-        formData.append("title", titleInput);
-    }
+    const titleInput = document.getElementById("meetingTitleInput");
+    const title = titleInput ? titleInput.value.trim() : "Meeting Audio";
 
-    const fileSizeMb = (currentSelectedFile.size / (1024 * 1024)).toFixed(1);
-    const isLarge = currentSelectedFile.size > 15 * 1024 * 1024;
-
-    document.getElementById("selectedFileCard").style.display = "none";
+    const fileCard = document.getElementById("selectedFileCard");
     const stepper = document.getElementById("processingStepper");
-    stepper.style.display = "flex";
+    const stepperText = document.getElementById("stepperStatusText");
+    const progressFill = document.getElementById("progressFill");
 
-    // 2-Pass Pipeline visual updates
-    updateStepUI(20, `Pass 1: Ingesting audio file (${fileSizeMb} MB)...`, "stepPass1", "Reading complete audio track...");
-
-    setTimeout(() => {
-        updateStepUI(
-            50,
-            `Pass 1: Extracting 100% full content spoken in audio...`,
-            "stepVerify",
-            "Running Speech-to-Text ASR model to get full verbatim transcript..."
-        );
-    }, 1200);
-
-    setTimeout(() => {
-        updateStepUI(
-            80,
-            `Pass 2: Processing extracted transcript through LLM...`,
-            "stepPass2",
-            "Generating executive summary, key decisions, and action items strictly from the transcript..."
-        );
-    }, 2800);
+    if (fileCard) fileCard.style.display = "none";
+    if (stepper) stepper.style.display = "block";
 
     try {
-        const response = await fetch(`${API_BASE_URL}/meetings/upload`, {
+        if (stepperText) stepperText.textContent = "Uploading audio & initializing ASR...";
+        if (progressFill) progressFill.style.width = "25%";
+
+        const formData = new FormData();
+        formData.append("file", currentSelectedFile);
+        formData.append("title", title);
+
+        const uploadRes = await fetch(`${API_BASE_URL}/meetings/upload`, {
             method: "POST",
             body: formData
         });
 
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.detail || "Failed to process meeting audio.");
+        if (!uploadRes.ok) {
+            const err = await uploadRes.json();
+            throw new Error(err.detail || "Upload failed");
         }
 
-        const meetingData = await response.json();
-        updateStepUI(100, "Pass 1 & Pass 2 Complete!", "stepDone", "100% audio content transcribed and summarized!");
+        const uploadData = await uploadRes.json();
+
+        if (progressFill) progressFill.style.width = "100%";
+        if (stepperText) stepperText.textContent = "Complete!";
+
+        showToast("Meeting processed successfully!", "success");
 
         setTimeout(() => {
-            stepper.style.display = "none";
-            showToast("Meeting transcribed and summarized successfully!", "success");
-            renderMeetingResults(meetingData);
+            if (stepper) stepper.style.display = "none";
             clearSelectedFile();
+            renderMeetingResults(uploadData);
+            showView("workbench");
             fetchMeetingsHistory();
-            scrollToSection("upload");
         }, 600);
 
     } catch (err) {
         console.error("Processing error:", err);
-        stepper.style.display = "none";
-        document.getElementById("selectedFileCard").style.display = "flex";
-        showToast(`Processing Error: ${err.message}`, "error");
-    }
-}
-
-function updateStepUI(percent, statusText, activeStepId, detailText = "") {
-    document.getElementById("progressFill").style.width = `${percent}%`;
-    document.getElementById("stepperStatusText").textContent = statusText;
-    document.getElementById("chunkingDetailText").textContent = detailText;
-    
-    ["stepPass1", "stepVerify", "stepPass2", "stepDone"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove("active");
-    });
-    if (activeStepId) {
-        const el = document.getElementById(activeStepId);
-        if (el) el.classList.add("active");
+        showToast(`Processing failed: ${err.message}`, "error");
+        if (stepper) stepper.style.display = "none";
+        if (fileCard) fileCard.style.display = "block";
     }
 }
 
 /* --------------------------------------------------------------------------
-   Render Meeting Results
+   Render Meeting Results in Workbench
    -------------------------------------------------------------------------- */
 function renderMeetingResults(data) {
     currentMeetingData = data;
-    document.getElementById("resultsView").style.display = "flex";
 
-    // Header & Player
-    document.getElementById("resTitle").textContent = data.title;
-    document.getElementById("resAsrTag").textContent = `ASR: ${data.asr_provider_used || 'Auto'}`;
-    document.getElementById("resLlmTag").textContent = `LLM: ${data.llm_provider_used || 'Auto'}`;
-    document.getElementById("resDate").textContent = data.created_at ? new Date(data.created_at).toLocaleString() : "Just now";
+    const resTitle = document.getElementById("resTitle");
+    const resDate = document.getElementById("resDate");
+    const resAsrTag = document.getElementById("resAsrTag");
+    const resLlmTag = document.getElementById("resLlmTag");
+    const audioPlayer = document.getElementById("meetingAudioPlayer");
 
-    const player = document.getElementById("meetingAudioPlayer");
-    player.src = data.audio_path;
+    if (resTitle) resTitle.textContent = data.title || "Meeting Audio";
+    if (resDate) {
+        const d = data.created_at ? new Date(data.created_at) : new Date();
+        resDate.textContent = d.toLocaleDateString() + " at " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    if (resAsrTag) resAsrTag.textContent = `ASR: ${data.asr_provider_used || 'Gemini'}`;
+    if (resLlmTag) resLlmTag.textContent = `AI: ${data.llm_provider_used || 'Rizer'}`;
 
-    // Overview Tab
-    document.getElementById("resSummaryText").textContent = data.summary || "No summary available.";
-    
+    if (audioPlayer && data.audio_url) {
+        audioPlayer.src = data.audio_url;
+    }
+
+    // Summary
+    const summaryText = document.getElementById("resSummaryText");
+    if (summaryText) summaryText.textContent = data.summary || "No summary available.";
+
+    // Topics
     const topicsList = document.getElementById("resTopicsList");
-    topicsList.innerHTML = "";
-    if (data.topics && data.topics.length > 0) {
-        data.topics.forEach(t => {
-            const item = document.createElement("div");
-            item.className = "topic-item";
-            item.innerHTML = `<h4>${t.topic}</h4><p>${t.summary}</p>`;
-            topicsList.appendChild(item);
-        });
-    } else {
-        topicsList.innerHTML = "<p class='muted-text'>No sub-topics categorized.</p>";
+    if (topicsList) {
+        topicsList.innerHTML = "";
+        if (data.topics && data.topics.length > 0) {
+            data.topics.forEach(t => {
+                const item = document.createElement("div");
+                item.style.marginBottom = "10px";
+                item.innerHTML = `<strong>${t.topic}:</strong> ${t.summary}`;
+                topicsList.appendChild(item);
+            });
+        } else {
+            topicsList.textContent = "Main audio topics processed.";
+        }
     }
 
-    // Decisions Tab
+    // Key Decisions
     const decisionsList = document.getElementById("resDecisionsList");
-    decisionsList.innerHTML = "";
-    const decisions = data.key_decisions || [];
-    document.getElementById("decisionsCount").textContent = decisions.length;
-    if (decisions.length > 0) {
-        decisions.forEach(d => {
-            const li = document.createElement("li");
-            li.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${d}</span>`;
-            decisionsList.appendChild(li);
-        });
-    } else {
-        decisionsList.innerHTML = "<p class='muted-text'>No key decisions recorded.</p>";
+    const decCount = document.getElementById("decisionsCount");
+    if (decisionsList) {
+        decisionsList.innerHTML = "";
+        const decs = data.key_decisions || [];
+        if (decCount) decCount.textContent = decs.length;
+        if (decs.length > 0) {
+            decs.forEach(d => {
+                const li = document.createElement("li");
+                li.textContent = d;
+                decisionsList.appendChild(li);
+            });
+        } else {
+            decisionsList.innerHTML = "<p class='muted-p'>No specific key decisions extracted.</p>";
+        }
     }
 
-    // Action Items Tab
+    // Action Items
     const actionsList = document.getElementById("resActionItemsList");
-    actionsList.innerHTML = "";
-    const actions = data.action_items || [];
-    document.getElementById("actionsCount").textContent = actions.length;
-    
-    if (actions.length > 0) {
-        actions.forEach(act => {
-            const isDone = act.status === "Done";
-            const row = document.createElement("div");
-            row.className = `action-item-row ${isDone ? 'done' : ''}`;
-            row.innerHTML = `
-                <div class="task-left">
-                    <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleActionItem('${data.id}', '${act.id}', this.checked)">
-                    <span class="task-desc">${act.task}</span>
-                </div>
-                <div class="task-meta">
-                    <span class="badge-assignee"><i class="fa-regular fa-user"></i> ${act.assignee || 'Unassigned'}</span>
-                    <span class="badge-priority">${act.priority || 'Medium'}</span>
-                </div>
-            `;
-            actionsList.appendChild(row);
-        });
-    } else {
-        actionsList.innerHTML = "<p class='muted-text'>No action items assigned.</p>";
+    const actCount = document.getElementById("actionsCount");
+    if (actionsList) {
+        actionsList.innerHTML = "";
+        const acts = data.action_items || [];
+        if (actCount) actCount.textContent = acts.length;
+        if (acts.length > 0) {
+            acts.forEach(act => {
+                const isDone = act.status === "Done";
+                const row = document.createElement("div");
+                row.style.display = "flex";
+                row.style.justifyContent = "space-between";
+                row.style.padding = "10px 14px";
+                row.style.background = "var(--bg-card)";
+                row.style.borderRadius = "10px";
+                row.style.marginBottom = "8px";
+                row.innerHTML = `
+                    <div>
+                        <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleActionItem('${data.id}', '${act.id}', this.checked)">
+                        <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${act.task}</span>
+                    </div>
+                    <span style="font-size:0.8rem; font-weight:600; color:var(--primary);">${act.assignee || 'Unassigned'}</span>
+                `;
+                actionsList.appendChild(row);
+            });
+        } else {
+            actionsList.innerHTML = "<p class='muted-p'>No action items assigned.</p>";
+        }
     }
 
-    // Transcript Tab
+    // Transcript
     const transcriptBody = document.getElementById("resTranscriptBody");
-    transcriptBody.innerHTML = "";
-    if (data.transcript_segments && data.transcript_segments.length > 0) {
-        data.transcript_segments.forEach(seg => {
-            const minutes = Math.floor(seg.start / 60).toString().padStart(2, '0');
-            const seconds = Math.floor(seg.start % 60).toString().padStart(2, '0');
-            const timeStr = `[${minutes}:${seconds}]`;
-            
-            const line = document.createElement("div");
-            line.style.marginBottom = "8px";
-            line.innerHTML = `<span class="timestamp-link" onclick="seekAudio(${seg.start})">${timeStr}</span> ${seg.text}`;
-            transcriptBody.appendChild(line);
-        });
-    } else if (data.transcript) {
-        transcriptBody.textContent = data.transcript;
-    } else {
-        transcriptBody.textContent = "No transcript recorded.";
+    if (transcriptBody) {
+        transcriptBody.innerHTML = "";
+        if (data.transcript_segments && data.transcript_segments.length > 0) {
+            data.transcript_segments.forEach(seg => {
+                const m = Math.floor(seg.start / 60).toString().padStart(2, '0');
+                const s = Math.floor(seg.start % 60).toString().padStart(2, '0');
+                const timeStr = `[${m}:${s}]`;
+                const line = document.createElement("div");
+                line.style.marginBottom = "8px";
+                line.innerHTML = `<span class="timestamp-link" onclick="seekAudio(${seg.start})">${timeStr}</span> ${seg.text}`;
+                transcriptBody.appendChild(line);
+            });
+        } else {
+            transcriptBody.textContent = data.transcript || "No transcript recorded.";
+        }
     }
 
     switchTab("overview");
@@ -333,17 +352,13 @@ async function toggleActionItem(meetingId, actionItemId, isChecked) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action_item_id: actionItemId, status: newStatus })
         });
-        if (!response.ok) throw new Error("Failed to update action item state");
+        if (!response.ok) throw new Error("Failed to update status");
         showToast(`Task status updated to ${newStatus}`, "info");
     } catch (err) {
-        console.error("Action item toggle error:", err);
         showToast("Could not update task status.", "error");
     }
 }
 
-/* --------------------------------------------------------------------------
-   Tabs Navigation
-   -------------------------------------------------------------------------- */
 function switchTab(tabName) {
     const formattedTab = tabName.toLowerCase() === "action-items" ? "ActionItems" :
                          tabName.toLowerCase() === "qa" ? "Qa" :
@@ -364,7 +379,7 @@ function switchTab(tabName) {
 }
 
 /* --------------------------------------------------------------------------
-   Meeting History Archive
+   Meeting History & Sidebar List Rendering
    -------------------------------------------------------------------------- */
 async function fetchMeetingsHistory(searchQuery = "") {
     try {
@@ -372,22 +387,94 @@ async function fetchMeetingsHistory(searchQuery = "") {
         if (searchQuery) url += `?search=${encodeURIComponent(searchQuery)}`;
         
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch meetings history");
+        if (!res.ok) throw new Error("Failed to fetch history");
         const data = await res.json();
         
         allMeetingsHistory = data.meetings || [];
         renderMeetingsTable(allMeetingsHistory);
+        renderSideHistoryList(allMeetingsHistory);
+        renderRecentActivity(allMeetingsHistory);
     } catch (err) {
         console.error("History fetch error:", err);
     }
 }
 
+function renderSideHistoryList(meetings) {
+    const list = document.getElementById("sideHistoryList");
+    if (!list) return;
+    list.innerHTML = "";
+
+    if (!meetings || meetings.length === 0) {
+        list.innerHTML = "<p class='muted-p' style='font-size:0.8rem;'>No meetings stored.</p>";
+        return;
+    }
+
+    meetings.slice(0, 5).forEach(m => {
+        const div = document.createElement("div");
+        div.className = "history-item-row";
+        div.onclick = () => viewMeetingDetails(m.id);
+
+        const dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : "Recent";
+        const minStr = m.duration_seconds ? `${Math.round(m.duration_seconds / 60)} min` : "Audio";
+
+        div.innerHTML = `
+            <div class="item-left">
+                <div class="item-wave-icon"><i class="fa-solid fa-waveform"></i></div>
+                <div class="item-info">
+                    <h4>${m.title}</h4>
+                    <span>${dateStr} • ${minStr}</span>
+                </div>
+            </div>
+            <span class="status-pill processed">Processed</span>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function renderRecentActivity(meetings) {
+    const container = document.getElementById("recentActivityContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!meetings || meetings.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state-box">
+                <i class="fa-regular fa-folder-open empty-icon"></i>
+                <h4>No meetings yet</h4>
+                <p>Upload your first audio file to get started.</p>
+            </div>
+        `;
+        return;
+    }
+
+    meetings.slice(0, 3).forEach(m => {
+        const card = document.createElement("div");
+        card.style.background = "var(--bg-card-subtle)";
+        card.style.border = "1px solid var(--border-color)";
+        card.style.padding = "14px 18px";
+        card.style.borderRadius = "12px";
+        card.style.marginBottom = "10px";
+        card.style.cursor = "pointer";
+        card.onclick = () => viewMeetingDetails(m.id);
+
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <h4 style="font-size:0.95rem; font-weight:700;">${m.title}</h4>
+                <span class="status-pill processed">Processed</span>
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted);">${m.summary ? m.summary.substring(0, 100) + '...' : 'Meeting transcript summary available.'}</p>
+        `;
+        container.appendChild(card);
+    });
+}
+
 function renderMeetingsTable(meetings) {
     const tbody = document.getElementById("meetingHistoryTableBody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     if (!meetings || meetings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 muted-text">No meetings stored in history.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px;" class="muted-p">No meetings stored in history.</td></tr>`;
         return;
     }
 
@@ -401,13 +488,13 @@ function renderMeetingsTable(meetings) {
             <td><strong>${m.title}</strong></td>
             <td>${dateStr}</td>
             <td>${durationStr}</td>
-            <td><span class="badge-priority">${taskCount} tasks</span></td>
-            <td><span class="meta-tag">${m.asr_provider_used || 'ASR'}</span></td>
+            <td><span class="tag-badge">${taskCount} tasks</span></td>
+            <td><span class="status-pill processed">Processed</span></td>
             <td>
-                <button class="btn btn-pill btn-secondary btn-sm" onclick="viewMeetingDetails('${m.id}')">
+                <button class="btn-secondary-sm" onclick="viewMeetingDetails('${m.id}')">
                     <i class="fa-solid fa-eye"></i> View
                 </button>
-                <button class="btn btn-pill btn-secondary btn-sm" onclick="deleteMeetingRecord('${m.id}')" style="color:#FF6B4A">
+                <button class="btn-secondary-sm" onclick="deleteMeetingRecord('${m.id}')" style="color:#ef4444;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
@@ -422,14 +509,34 @@ async function viewMeetingDetails(meetingId) {
         if (!res.ok) throw new Error("Meeting not found");
         const data = await res.json();
         renderMeetingResults(data);
-        scrollToSection("upload");
+        showView("workbench");
     } catch (err) {
         showToast("Error loading meeting details.", "error");
     }
 }
 
-async function deleteMeetingRecord(meetingId) {
-    if (!confirm("Are you sure you want to delete this meeting recording and summary?")) return;
+let pendingDeleteMeetingId = null;
+
+function deleteMeetingRecord(meetingId) {
+    pendingDeleteMeetingId = meetingId;
+    const modal = document.getElementById("confirmDeleteModal");
+    if (modal) modal.style.display = "flex";
+
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmBtn) {
+        confirmBtn.onclick = () => executeDeleteMeeting(meetingId);
+    }
+}
+
+function closeDeleteModal() {
+    pendingDeleteMeetingId = null;
+    const modal = document.getElementById("confirmDeleteModal");
+    if (modal) modal.style.display = "none";
+}
+
+async function executeDeleteMeeting(meetingId) {
+    closeDeleteModal();
+    if (!meetingId) return;
     try {
         const res = await fetch(`${API_BASE_URL}/meetings/${meetingId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Delete failed");
@@ -446,46 +553,47 @@ function handleGlobalSearch(event) {
 }
 
 /* --------------------------------------------------------------------------
-   Export & Copy Helpers
+   Export Helpers
    -------------------------------------------------------------------------- */
 function toggleExportMenu() {
     const menu = document.getElementById("exportMenu");
-    menu.style.display = menu.style.display === "none" ? "flex" : "none";
+    if (menu) menu.style.display = menu.style.display === "none" ? "flex" : "none";
 }
 
-function exportCurrentMeeting(format) {
-    if (!currentMeetingData) return;
-    window.open(`${API_BASE_URL}/meetings/${currentMeetingData.id}/export?format=${format}`, "_blank");
-    document.getElementById("exportMenu").style.display = "none";
-}
-
-function copyCurrentSummary() {
-    if (!currentMeetingData || !currentMeetingData.summary) {
-        showToast("No active summary to copy.", "error");
+async function exportCurrentMeeting(format) {
+    if (!currentMeetingData || !currentMeetingData.id) {
+        showToast("No active meeting loaded for export.", "error");
         return;
     }
-    navigator.clipboard.writeText(currentMeetingData.summary);
-    showToast("Executive summary copied to clipboard!", "success");
+
+    try {
+        const url = `${API_BASE_URL}/meetings/${currentMeetingData.id}/export?format=${format}`;
+        window.open(url, '_blank');
+        toggleExportMenu();
+        showToast(`Exporting meeting as ${format.toUpperCase()}...`, "info");
+    } catch (err) {
+        showToast("Failed to export meeting.", "error");
+    }
 }
 
 function copyTranscriptText() {
-    if (!currentMeetingData || !currentMeetingData.transcript) return;
-    navigator.clipboard.writeText(currentMeetingData.transcript);
-    showToast("Full transcript copied to clipboard!", "success");
-}
+    if (!currentMeetingData || !currentMeetingData.transcript) {
+        showToast("No transcript text available to copy.", "error");
+        return;
+    }
 
-function scrollToSection(id) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    navigator.clipboard.writeText(currentMeetingData.transcript)
+        .then(() => showToast("Full transcript text copied to clipboard!", "success"))
+        .catch(() => showToast("Failed to copy text.", "error"));
 }
 
 /* --------------------------------------------------------------------------
-   RAG Transcript Q&A Helper Functions
+   RAG Q&A Engine Frontend
    -------------------------------------------------------------------------- */
-function setQAQuestion(questionText) {
+function setQAQuestion(text) {
     const input = document.getElementById("qaQuestionInput");
     if (input) {
-        input.value = questionText;
+        input.value = text;
         askMeetingQuestion();
     }
 }
@@ -508,7 +616,6 @@ async function askMeetingQuestion() {
     const container = document.getElementById("qaResultsContainer");
     const questionDisplayEl = document.getElementById("qaQuestionDisplayText");
     const answerEl = document.getElementById("qaAnswerText");
-    const hintEl = document.getElementById("qaProviderHint");
 
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
@@ -530,7 +637,6 @@ async function askMeetingQuestion() {
         container.style.display = "block";
         if (questionDisplayEl) questionDisplayEl.textContent = question;
         if (answerEl) answerEl.textContent = data.answer;
-        if (hintEl) hintEl.textContent = "RAG AI Engine";
 
         showToast("Answer generated successfully!", "success");
 
@@ -544,21 +650,20 @@ async function askMeetingQuestion() {
 }
 
 /* --------------------------------------------------------------------------
-   Toast Notifications
+   Toast Notification System
    -------------------------------------------------------------------------- */
 function showToast(message, type = "info") {
     const container = document.getElementById("toastContainer");
+    if (!container) return;
+
     const toast = document.createElement("div");
-    toast.className = "toast";
-    
-    let icon = "fa-circle-info";
-    if (type === "success") icon = "fa-circle-check";
-    if (type === "error") icon = "fa-circle-exclamation";
-    
-    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
-        toast.remove();
-    }, 4000);
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
 }
