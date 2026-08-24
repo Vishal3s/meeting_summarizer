@@ -1,0 +1,57 @@
+# Environment & Secrets (NEVER COMMIT API KEYS)
+.env
+.env.local
+.env.*.local
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# SQLite Database
+meetings.db
+*.sqlite
+*.db
+*.sqlite3
+
+# User Audio Uploads & Generated Chunks
+uploads/*
+!uploads/.gitkeep
+
+# Temporary Files & Exports
+*.wav.temp.wav
+uploaded_audio_transcript.txt
+scratch/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
